@@ -5,7 +5,6 @@
 
 using namespace std;
 
-// User Structure to hold user data
 struct User
 {
     string name;
@@ -44,7 +43,7 @@ void menu()
         cout << "4. Exit\n";
         cout << "Enter your choice: ";
         cin >> choice;
-        cin.ignore(); // Clear the newline character from the buffer
+        cin.ignore();
 
         switch (choice)
         {
