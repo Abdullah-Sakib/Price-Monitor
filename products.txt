@@ -1,0 +1,3 @@
+Potato,60,Groceries
+Eggs,13,Grocerries
+Onion,120,Groceries

@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <iomanip>
 
 using namespace std;
 
@@ -13,34 +14,44 @@ struct User
     string role;
 };
 
-// Function Prototypes
+struct Product
+{
+    string name;
+    double price;
+    string category;
+};
+
 void signUp();
-bool signIn();
+bool signIn(string &role);
 void saveUser(const User &user);
 bool isUserExist(const string &email);
 void loadUsers(vector<User> &users);
-bool validateCredentials(const string &email, const string &password);
-void menu();
+bool validateCredentials(const string &email, const string &password, string &role);
+void preSignInMenu();
+bool postSignInMenu(const string &role);
+void addProduct();
+void showProducts();
+void saveProduct(const Product &product);
+void loadProducts(vector<Product> &products);
 
 int main()
 {
-    menu();
+    preSignInMenu();
     return 0;
 }
 
-// Main menu to choose actions
-void menu()
+void preSignInMenu()
 {
     int choice;
-    bool signedIn = false;
+    string role;
+    bool exitSystem = false;
 
     do
     {
         cout << "\n--- Welcome to Price Monitor ---\n";
         cout << "1. Sign Up\n";
         cout << "2. Sign In\n";
-        cout << "3. Sign Out\n";
-        cout << "4. Exit\n";
+        cout << "3. Exit\n";
         cout << "Enter your choice: ";
         cin >> choice;
         cin.ignore();
@@ -51,29 +62,96 @@ void menu()
             signUp();
             break;
         case 2:
-            signedIn = signIn();
+            if (signIn(role))
+            {
+                exitSystem = postSignInMenu(role);
+            }
             break;
         case 3:
-            if (signedIn)
-            {
-                cout << "Signed out successfully!\n";
-                signedIn = false;
-            }
-            else
-            {
-                cout << "No user is currently signed in.\n";
-            }
-            break;
-        case 4:
             cout << "Exiting the system. Goodbye!\n";
+            exitSystem = true;
             break;
         default:
             cout << "Invalid choice. Please try again.\n";
         }
-    } while (choice != 4);
+    } while (!exitSystem);
 }
 
-// Function to handle user sign-up
+bool postSignInMenu(const string &role)
+{
+    int choice;
+    bool exitSystem = false;
+
+    do
+    {
+        if (role == "Admin")
+        {
+            cout << "\n--- Admin Menu ---\n";
+            cout << "1. Add Product\n";
+            cout << "2. View Products\n";
+            cout << "3. Sign Out\n";
+            cout << "4. Exit System\n";
+            cout << "Enter your choice: ";
+            cin >> choice;
+            cin.ignore();
+
+            if (choice == 1)
+            {
+                addProduct();
+            }
+            else if (choice == 2)
+            {
+                showProducts();
+            }
+            else if (choice == 3)
+            {
+                cout << "Signed out successfully!\n";
+                return false;
+            }
+            else if (choice == 4)
+            {
+                cout << "Exiting the system.\n";
+                exitSystem = true;
+            }
+            else
+            {
+                cout << "Invalid choice. Please try again.\n";
+            }
+        }
+        else if (role == "User")
+        {
+            cout << "\n--- User Menu ---\n";
+            cout << "1. View Products\n";
+            cout << "2. Sign Out\n";
+            cout << "3. Exit System\n";
+            cout << "Enter your choice: ";
+            cin >> choice;
+            cin.ignore();
+
+            if (choice == 1)
+            {
+                showProducts();
+            }
+            else if (choice == 2)
+            {
+                cout << "Signed out successfully!\n";
+                return false;
+            }
+            else if (choice == 3)
+            {
+                cout << "Exiting the system.\n";
+                exitSystem = true;
+            }
+            else
+            {
+                cout << "Invalid choice. Please try again.\n";
+            }
+        }
+    } while (!exitSystem);
+
+    return exitSystem;
+}
+
 void signUp()
 {
     User user;
@@ -97,8 +175,7 @@ void signUp()
     cout << "Sign up successful! You can now sign in.\n";
 }
 
-// Function to handle user sign-in
-bool signIn()
+bool signIn(string &role)
 {
     string email, password;
     cout << "\n--- Sign In ---\n";
@@ -107,7 +184,7 @@ bool signIn()
     cout << "Enter your Password: ";
     getline(cin, password);
 
-    if (validateCredentials(email, password))
+    if (validateCredentials(email, password, role))
     {
         cout << "Sign in successful! Welcome!\n";
         return true;
@@ -119,10 +196,9 @@ bool signIn()
     }
 }
 
-// Function to save user details to the file
 void saveUser(const User &user)
 {
-    ofstream outfile("user.txt", ios::app); // Open file in append mode
+    ofstream outfile("user.txt", ios::app);
     if (outfile.is_open())
     {
         outfile << user.name << "," << user.email << "," << user.password << "," << user.role << "\n";
@@ -134,7 +210,6 @@ void saveUser(const User &user)
     }
 }
 
-// Function to check if a user with the given email already exists
 bool isUserExist(const string &email)
 {
     vector<User> users;
@@ -144,13 +219,12 @@ bool isUserExist(const string &email)
     {
         if (user.email == email)
         {
-            return true; // User exists
+            return true;
         }
     }
-    return false; // User does not exist
+    return false;
 }
 
-// Function to load all users from the file into a vector
 void loadUsers(vector<User> &users)
 {
     ifstream infile("user.txt");
@@ -182,8 +256,7 @@ void loadUsers(vector<User> &users)
     }
 }
 
-// Function to validate user credentials for sign-in
-bool validateCredentials(const string &email, const string &password)
+bool validateCredentials(const string &email, const string &password, string &role)
 {
     vector<User> users;
     loadUsers(users);
@@ -192,8 +265,89 @@ bool validateCredentials(const string &email, const string &password)
     {
         if (user.email == email && user.password == password)
         {
-            return true; // Credentials are valid
+            role = user.role; // Set the role for the signed-in user
+            return true;
         }
     }
-    return false; // Invalid credentials
+    return false;
+}
+
+// Admin:
+void addProduct()
+{
+    Product product;
+    cout << "\n--- Add Product ---\n";
+    cout << "Enter Product Name: ";
+    getline(cin, product.name);
+    cout << "Enter Product Price: ";
+    cin >> product.price;
+    cin.ignore();
+    cout << "Enter Product Category: ";
+    getline(cin, product.category);
+
+    saveProduct(product);
+    cout << "Product added successfully!\n";
+}
+
+void saveProduct(const Product &product)
+{
+    ofstream outfile("products.txt", ios::app);
+    if (outfile.is_open())
+    {
+        outfile << product.name << "," << product.price << "," << product.category << "\n";
+        outfile.close();
+    }
+    else
+    {
+        cout << "Error: Unable to save product data.\n";
+    }
+}
+
+// User:
+void showProducts()
+{
+    vector<Product> products;
+    loadProducts(products);
+
+    if (products.empty())
+    {
+        cout << "No products available.\n";
+    }
+    else
+    {
+        cout << "\n--- Product List ---\n";
+        cout << left << setw(20) << "Product Name" << setw(15) << "Price" << setw(20) << "Category" << endl;
+        cout << "-----------------------------------------------------\n";
+        for (const auto &product : products)
+        {
+            cout << left << setw(20) << product.name << setw(15) << product.price << setw(20) << product.category << endl;
+        }
+    }
+}
+
+void loadProducts(vector<Product> &products)
+{
+    ifstream infile("products.txt");
+    string line;
+
+    if (infile.is_open())
+    {
+        while (getline(infile, line))
+        {
+            Product product;
+            size_t pos = 0;
+            pos = line.find(",");
+            product.name = line.substr(0, pos);
+            line.erase(0, pos + 1);
+
+            pos = line.find(",");
+            product.price = stod(line.substr(0, pos));
+            line.erase(0, pos + 1);
+
+            product.category = line;
+
+            products.push_back(product);
+        }
+        infile.close();
+    }
 }
