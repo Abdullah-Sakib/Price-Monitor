@@ -68,7 +68,7 @@ void preSignInMenu()
             }
             break;
         case 3:
-            cout << "Exiting the system. Goodbye!\n";
+            cout << "Exiting the system.\n";
             exitSystem = true;
             break;
         default:
@@ -315,12 +315,12 @@ void showProducts()
     }
     else
     {
-        cout << "\n--- Product List ---\n";
-        cout << left << setw(20) << "Product Name" << setw(15) << "Price" << setw(20) << "Category" << endl;
-        cout << "-----------------------------------------------------\n";
+        cout << "\n                       --- Product List ---\n";
+        cout << left << setw(30) << "Product Name" << setw(25) << "Price" << setw(30) << "Category" << endl;
+        cout << "-------------------------------------------------------------------\n";
         for (const auto &product : products)
         {
-            cout << left << setw(20) << product.name << setw(15) << product.price << setw(20) << product.category << endl;
+            cout << left << setw(30) << product.name << setw(25) << product.price << setw(30) << product.category << endl;
         }
     }
 }

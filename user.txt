@@ -1,2 +1,3 @@
 Abdullah Sakib,abdullahsakib888@gmail.com,123456,Admin
-Akil Uddin,akil@gmail.com,123456aA@,User
+Akil Uddin,akil@gmail.com,123456,User
+Shanto,shanto@gmail.com,123456,User

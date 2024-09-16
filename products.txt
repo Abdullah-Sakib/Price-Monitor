@@ -1,3 +1,10 @@
 Potato,60,Groceries
-Eggs,13,Grocerries
+Eggs,13,Groceries
 Onion,120,Groceries
+Milk,50,Dairy
+Bread,30,Bakery
+Apples,90,Fruits
+Chicken,200,Meat
+Rice,70,Groceries
+Butter,80,Dairy
+Tomatoes,40,Vegetables
