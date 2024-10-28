@@ -16,6 +16,7 @@ struct User
 
 struct Product
 {
+    int id;
     string name;
     double price;
     string category;
@@ -33,6 +34,7 @@ void addProduct();
 void showProducts();
 void saveProduct(const Product &product);
 void loadProducts(vector<Product> &products);
+int getNextProductId();
 
 int main()
 {
@@ -265,17 +267,29 @@ bool validateCredentials(const string &email, const string &password, string &ro
     {
         if (user.email == email && user.password == password)
         {
-            role = user.role; // Set the role for the signed-in user
+            role = user.role;
             return true;
         }
     }
     return false;
 }
 
-// Admin:
+int getNextProductId()
+{
+    vector<Product> products;
+    loadProducts(products);
+
+    if (products.empty())
+        return 1; // Start ID at 1 if no products exist
+
+    return products.back().id + 1; // Get the last product ID and increment
+}
+
 void addProduct()
 {
     Product product;
+    product.id = getNextProductId();
+
     cout << "\n--- Add Product ---\n";
     cout << "Enter Product Name: ";
     getline(cin, product.name);
@@ -286,7 +300,7 @@ void addProduct()
     getline(cin, product.category);
 
     saveProduct(product);
-    cout << "Product added successfully!\n";
+    cout << "Product added successfully with ID: " << product.id << "!\n";
 }
 
 void saveProduct(const Product &product)
@@ -294,7 +308,7 @@ void saveProduct(const Product &product)
     ofstream outfile("products.txt", ios::app);
     if (outfile.is_open())
     {
-        outfile << product.name << "," << product.price << "," << product.category << "\n";
+        outfile << product.id << "," << product.name << "," << product.price << "," << product.category << "\n";
         outfile.close();
     }
     else
@@ -303,7 +317,6 @@ void saveProduct(const Product &product)
     }
 }
 
-// User:
 void showProducts()
 {
     vector<Product> products;
@@ -315,12 +328,12 @@ void showProducts()
     }
     else
     {
-        cout << "\n                       --- Product List ---\n";
-        cout << left << setw(30) << "Product Name" << setw(25) << "Price" << setw(30) << "Category" << endl;
-        cout << "-------------------------------------------------------------------\n";
+        cout << "\n                            --- Product List ---\n\n";
+        cout << left << setw(10) << "ID" << setw(30) << "Product Name" << setw(25) << "Price" << setw(30) << "Category" << endl;
+        cout << "--------------------------------------------------------------------------------\n";
         for (const auto &product : products)
         {
-            cout << left << setw(30) << product.name << setw(25) << product.price << setw(30) << product.category << endl;
+            cout << left << setw(10) << product.id << setw(30) << product.name << setw(25) << product.price << setw(30) << product.category << endl;
         }
     }
 }
@@ -336,14 +349,23 @@ void loadProducts(vector<Product> &products)
         {
             Product product;
             size_t pos = 0;
+
+            // Extract id
+            pos = line.find(",");
+            product.id = stoi(line.substr(0, pos));
+            line.erase(0, pos + 1);
+
+            // Extract name
             pos = line.find(",");
             product.name = line.substr(0, pos);
             line.erase(0, pos + 1);
 
+            // Extract price
             pos = line.find(",");
             product.price = stod(line.substr(0, pos));
             line.erase(0, pos + 1);
 
+            // Extract category
             product.category = line;
 
             products.push_back(product);
