@@ -32,9 +32,11 @@ void preSignInMenu();
 bool postSignInMenu(const string &role);
 void addProduct();
 void showProducts();
+void updateProductPrice();
 void saveProduct(const Product &product);
 void loadProducts(vector<Product> &products);
 int getNextProductId();
+void saveAllProducts(const vector<Product> &products);
 
 int main()
 {
@@ -91,8 +93,9 @@ bool postSignInMenu(const string &role)
             cout << "\n--- Admin Menu ---\n";
             cout << "1. Add Product\n";
             cout << "2. View Products\n";
-            cout << "3. Sign Out\n";
-            cout << "4. Exit System\n";
+            cout << "3. Update Product Price\n";
+            cout << "4. Sign Out\n";
+            cout << "5. Exit System\n";
             cout << "Enter your choice: ";
             cin >> choice;
             cin.ignore();
@@ -107,10 +110,14 @@ bool postSignInMenu(const string &role)
             }
             else if (choice == 3)
             {
+                updateProductPrice();
+            }
+            else if (choice == 4)
+            {
                 cout << "Signed out successfully!\n";
                 return false;
             }
-            else if (choice == 4)
+            else if (choice == 5)
             {
                 cout << "Exiting the system.\n";
                 exitSystem = true;
@@ -317,6 +324,23 @@ void saveProduct(const Product &product)
     }
 }
 
+void saveAllProducts(const vector<Product> &products)
+{
+    ofstream outfile("products.txt", ios::trunc); // Overwrite the entire file
+    if (outfile.is_open())
+    {
+        for (const auto &product : products)
+        {
+            outfile << product.id << "," << product.name << "," << product.price << "," << product.category << "\n";
+        }
+        outfile.close();
+    }
+    else
+    {
+        cout << "Error: Unable to save all products.\n";
+    }
+}
+
 void showProducts()
 {
     vector<Product> products;
@@ -350,26 +374,59 @@ void loadProducts(vector<Product> &products)
             Product product;
             size_t pos = 0;
 
-            // Extract id
             pos = line.find(",");
             product.id = stoi(line.substr(0, pos));
             line.erase(0, pos + 1);
 
-            // Extract name
             pos = line.find(",");
             product.name = line.substr(0, pos);
             line.erase(0, pos + 1);
 
-            // Extract price
             pos = line.find(",");
             product.price = stod(line.substr(0, pos));
             line.erase(0, pos + 1);
 
-            // Extract category
             product.category = line;
 
             products.push_back(product);
         }
         infile.close();
+    }
+}
+
+void updateProductPrice()
+{
+    vector<Product> products;
+    loadProducts(products);
+
+    int productId;
+    double newPrice;
+    bool found = false;
+
+    cout << "\n--- Update Product Price ---\n";
+    cout << "Enter Product ID: ";
+    cin >> productId;
+
+    for (auto &product : products)
+    {
+        if (product.id == productId)
+        {
+            cout << "Current Price of " << product.name << " is " << product.price << "\n";
+            cout << "Enter New Price: ";
+            cin >> newPrice;
+            product.price = newPrice;
+            found = true;
+            cout << "Product price updated successfully!\n";
+            break;
+        }
+    }
+
+    if (!found)
+    {
+        cout << "Product ID not found.\n";
+    }
+    else
+    {
+        saveAllProducts(products);
     }
 }
