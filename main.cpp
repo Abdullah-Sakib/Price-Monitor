@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 #include <iomanip>
+#include <ctime>
+#include <algorithm>
 
 using namespace std;
 
@@ -22,6 +24,15 @@ struct Product
     string category;
 };
 
+struct PriceLog
+{
+    int productId;
+    double previousPrice;
+    double newPrice;
+    string updateDate;
+};
+
+// Function declarations
 void signUp();
 bool signIn(string &role);
 void saveUser(const User &user);
@@ -37,6 +48,9 @@ void saveProduct(const Product &product);
 void loadProducts(vector<Product> &products);
 int getNextProductId();
 void saveAllProducts(const vector<Product> &products);
+void loadPriceLog(int productId, vector<PriceLog> &logs);
+void savePriceLog(const PriceLog &log);
+void showPriceUpdateHistory();
 
 int main()
 {
@@ -44,6 +58,7 @@ int main()
     return 0;
 }
 
+// Pre-SignIn Menu
 void preSignInMenu()
 {
     int choice;
@@ -81,6 +96,7 @@ void preSignInMenu()
     } while (!exitSystem);
 }
 
+// Post-SignIn Menu
 bool postSignInMenu(const string &role)
 {
     int choice;
@@ -94,36 +110,35 @@ bool postSignInMenu(const string &role)
             cout << "1. Add Product\n";
             cout << "2. View Products\n";
             cout << "3. Update Product Price\n";
-            cout << "4. Sign Out\n";
-            cout << "5. Exit System\n";
+            cout << "4. View Price Update History\n";
+            cout << "5. Sign Out\n";
+            cout << "6. Exit System\n";
             cout << "Enter your choice: ";
             cin >> choice;
             cin.ignore();
 
-            if (choice == 1)
+            switch (choice)
             {
+            case 1:
                 addProduct();
-            }
-            else if (choice == 2)
-            {
+                break;
+            case 2:
                 showProducts();
-            }
-            else if (choice == 3)
-            {
+                break;
+            case 3:
                 updateProductPrice();
-            }
-            else if (choice == 4)
-            {
+                break;
+            case 4:
+                showPriceUpdateHistory();
+                break;
+            case 5:
                 cout << "Signed out successfully!\n";
                 return false;
-            }
-            else if (choice == 5)
-            {
+            case 6:
                 cout << "Exiting the system.\n";
                 exitSystem = true;
-            }
-            else
-            {
+                break;
+            default:
                 cout << "Invalid choice. Please try again.\n";
             }
         }
@@ -131,28 +146,29 @@ bool postSignInMenu(const string &role)
         {
             cout << "\n--- User Menu ---\n";
             cout << "1. View Products\n";
-            cout << "2. Sign Out\n";
-            cout << "3. Exit System\n";
+            cout << "2. View Price Update History\n";
+            cout << "3. Sign Out\n";
+            cout << "4. Exit System\n";
             cout << "Enter your choice: ";
             cin >> choice;
             cin.ignore();
 
-            if (choice == 1)
+            switch (choice)
             {
+            case 1:
                 showProducts();
-            }
-            else if (choice == 2)
-            {
+                break;
+            case 2:
+                showPriceUpdateHistory();
+                break;
+            case 3:
                 cout << "Signed out successfully!\n";
                 return false;
-            }
-            else if (choice == 3)
-            {
+            case 4:
                 cout << "Exiting the system.\n";
                 exitSystem = true;
-            }
-            else
-            {
+                break;
+            default:
                 cout << "Invalid choice. Please try again.\n";
             }
         }
@@ -161,6 +177,7 @@ bool postSignInMenu(const string &role)
     return exitSystem;
 }
 
+// Sign Up
 void signUp()
 {
     User user;
@@ -184,92 +201,64 @@ void signUp()
     cout << "Sign up successful! You can now sign in.\n";
 }
 
+// Sign In
 bool signIn(string &role)
 {
     string email, password;
     cout << "\n--- Sign In ---\n";
     cout << "Enter your Email: ";
-    getline(cin, email);
+    cin >> email;
     cout << "Enter your Password: ";
-    getline(cin, password);
-
-    if (validateCredentials(email, password, role))
-    {
-        cout << "Sign in successful! Welcome!\n";
-        return true;
-    }
-    else
-    {
-        cout << "Invalid email or password. Please try again.\n";
-        return false;
-    }
+    cin >> password;
+    return validateCredentials(email, password, role);
 }
 
+// Save User
 void saveUser(const User &user)
 {
-    ofstream outfile("user.txt", ios::app);
-    if (outfile.is_open())
-    {
-        outfile << user.name << "," << user.email << "," << user.password << "," << user.role << "\n";
-        outfile.close();
-    }
-    else
-    {
-        cout << "Error: Unable to save user data.\n";
-    }
+    ofstream file("users.txt", ios::app);
+    file << user.name << "," << user.email << "," << user.password << "," << user.role << "\n";
+    file.close();
 }
 
+// Check if User Exists
 bool isUserExist(const string &email)
 {
     vector<User> users;
     loadUsers(users);
-
     for (const auto &user : users)
     {
         if (user.email == email)
-        {
             return true;
-        }
     }
     return false;
 }
 
+// Load Users
 void loadUsers(vector<User> &users)
 {
-    ifstream infile("user.txt");
+    ifstream file("users.txt");
     string line;
-
-    if (infile.is_open())
+    while (getline(file, line))
     {
-        while (getline(infile, line))
-        {
-            User user;
-            size_t pos = 0;
-            pos = line.find(",");
-            user.name = line.substr(0, pos);
-            line.erase(0, pos + 1);
-
-            pos = line.find(",");
-            user.email = line.substr(0, pos);
-            line.erase(0, pos + 1);
-
-            pos = line.find(",");
-            user.password = line.substr(0, pos);
-            line.erase(0, pos + 1);
-
-            user.role = line;
-
-            users.push_back(user);
-        }
-        infile.close();
+        User user;
+        size_t pos1 = line.find(',');
+        size_t pos2 = line.find(',', pos1 + 1);
+        size_t pos3 = line.find(',', pos2 + 1);
+        user.name = line.substr(0, pos1);
+        user.email = line.substr(pos1 + 1, pos2 - pos1 - 1);
+        user.password = line.substr(pos2 + 1, pos3 - pos2 - 1);
+        user.role = line.substr(pos3 + 1);
+        users.push_back(user);
     }
+    file.close();
 }
 
+// Validate Credentials
 bool validateCredentials(const string &email, const string &password, string &role)
 {
     vector<User> users;
     loadUsers(users);
-
     for (const auto &user : users)
     {
         if (user.email == email && user.password == password)
@@ -278,20 +267,11 @@ bool validateCredentials(const string &email, const string &password, string &ro
             return true;
         }
     }
+    cout << "Invalid credentials!\n";
     return false;
 }
 
-int getNextProductId()
-{
-    vector<Product> products;
-    loadProducts(products);
-
-    if (products.empty())
-        return 1; // Start ID at 1 if no products exist
-
-    return products.back().id + 1; // Get the last product ID and increment
-}
-
+// Add Product
 void addProduct()
 {
     Product product;
@@ -310,37 +290,7 @@ void addProduct()
     cout << "Product added successfully with ID: " << product.id << "!\n";
 }
 
-void saveProduct(const Product &product)
-{
-    ofstream outfile("products.txt", ios::app);
-    if (outfile.is_open())
-    {
-        outfile << product.id << "," << product.name << "," << product.price << "," << product.category << "\n";
-        outfile.close();
-    }
-    else
-    {
-        cout << "Error: Unable to save product data.\n";
-    }
-}
-
-void saveAllProducts(const vector<Product> &products)
-{
-    ofstream outfile("products.txt", ios::trunc); // Overwrite the entire file
-    if (outfile.is_open())
-    {
-        for (const auto &product : products)
-        {
-            outfile << product.id << "," << product.name << "," << product.price << "," << product.category << "\n";
-        }
-        outfile.close();
-    }
-    else
-    {
-        cout << "Error: Unable to save all products.\n";
-    }
-}
-
+// Show Products
 void showProducts()
 {
     vector<Product> products;
@@ -352,48 +302,17 @@ void showProducts()
     }
     else
     {
-        cout << "\n                            --- Product List ---\n\n";
-        cout << left << setw(10) << "ID" << setw(30) << "Product Name" << setw(25) << "Price" << setw(30) << "Category" << endl;
-        cout << "--------------------------------------------------------------------------------\n";
+        cout << "\n--- Product List ---\n";
+        cout << left << setw(5) << "ID" << setw(20) << "Name" << setw(10) << "Price" << setw(15) << "Category" << "\n";
+        cout << "------------------------------------------------------\n";
         for (const auto &product : products)
         {
-            cout << left << setw(10) << product.id << setw(30) << product.name << setw(25) << product.price << setw(30) << product.category << endl;
+            cout << left << setw(5) << product.id << setw(20) << product.name << setw(10) << product.price << setw(15) << product.category << "\n";
         }
     }
 }
 
-void loadProducts(vector<Product> &products)
-{
-    ifstream infile("products.txt");
-    string line;
-
-    if (infile.is_open())
-    {
-        while (getline(infile, line))
-        {
-            Product product;
-            size_t pos = 0;
-
-            pos = line.find(",");
-            product.id = stoi(line.substr(0, pos));
-            line.erase(0, pos + 1);
-
-            pos = line.find(",");
-            product.name = line.substr(0, pos);
-            line.erase(0, pos + 1);
-
-            pos = line.find(",");
-            product.price = stod(line.substr(0, pos));
-            line.erase(0, pos + 1);
-
-            product.category = line;
-
-            products.push_back(product);
-        }
-        infile.close();
-    }
-}
-
+// Update Product Price
 void updateProductPrice()
 {
     vector<Product> products;
@@ -411,11 +330,25 @@ void updateProductPrice()
     {
         if (product.id == productId)
         {
-            cout << "Current Price of " << product.name << " is " << product.price << "\n";
+            double oldPrice = product.price;
+            cout << "Current Price of " << product.name << " is " << oldPrice << "\n";
             cout << "Enter New Price: ";
             cin >> newPrice;
             product.price = newPrice;
             found = true;
+
+            // Create a price log entry
+            PriceLog log;
+            log.productId = productId;
+            log.previousPrice = oldPrice;
+            log.newPrice = newPrice;
+
+            // Get current date and time
+            time_t now = time(0);
+            char *dt = ctime(&now);
+            log.updateDate = dt;
+
+            savePriceLog(log);
             cout << "Product price updated successfully!\n";
             break;
         }
@@ -429,4 +362,111 @@ void updateProductPrice()
     {
         saveAllProducts(products);
     }
+}
+
+// Comparison function to compare PriceLog objects by updateDate
+bool comparePriceLogsDescending(const PriceLog &a, const PriceLog &b)
+{
+    return a.updateDate > b.updateDate; // Sort in descending order
+}
+
+void showPriceUpdateHistory()
+{
+    int productId;
+    cout << "\n--- Price Update History ---\n";
+    cout << "Enter Product ID: ";
+    cin >> productId;
+    vector<PriceLog> logs;
+    loadPriceLog(productId, logs);
+
+    if (logs.empty())
+    {
+        cout << "No price updates available for this product.\n";
+    }
+    else
+    {
+        // Sort logs using the comparison function
+        sort(logs.begin(), logs.end(), comparePriceLogsDescending);
+
+        cout << "\nPrice Update Log for Product ID: " << productId << "\n";
+        cout << left << setw(30) << "Date" << setw(15) << "Old Price" << setw(15) << "New Price" << "\n";
+        cout << "---------------------------------------------------------\n";
+        for (const auto &log : logs)
+        {
+            cout << left << setw(30) << log.updateDate << setw(15) << log.previousPrice << setw(15) << log.newPrice << "\n";
+        }
+    }
+}
+
+// Helper Functions for File Operations
+void saveProduct(const Product &product)
+{
+    ofstream file("products.txt", ios::app);
+    file << product.id << "," << product.name << "," << product.price << "," << product.category << "\n";
+    file.close();
+}
+
+void loadProducts(vector<Product> &products)
+{
+    ifstream file("products.txt");
+    string line;
+    while (getline(file, line))
+    {
+        Product product;
+        size_t pos1 = line.find(',');
+        size_t pos2 = line.find(',', pos1 + 1);
+        size_t pos3 = line.find(',', pos2 + 1);
+        product.id = stoi(line.substr(0, pos1));
+        product.name = line.substr(pos1 + 1, pos2 - pos1 - 1);
+        product.price = stod(line.substr(pos2 + 1, pos3 - pos2 - 1));
+        product.category = line.substr(pos3 + 1);
+        products.push_back(product);
+    }
+    file.close();
+}
+
+int getNextProductId()
+{
+    vector<Product> products;
+    loadProducts(products);
+    return products.empty() ? 1 : products.back().id + 1;
+}
+
+void saveAllProducts(const vector<Product> &products)
+{
+    ofstream file("products.txt", ios::trunc);
+    for (const auto &product : products)
+    {
+        file << product.id << "," << product.name << "," << product.price << "," << product.category << "\n";
+    }
+    file.close();
+}
+
+void savePriceLog(const PriceLog &log)
+{
+    ofstream file("price_logs.txt", ios::app);
+    file << log.productId << "," << log.previousPrice << "," << log.newPrice << "," << log.updateDate;
+    file.close();
+}
+
+void loadPriceLog(int productId, vector<PriceLog> &logs)
+{
+    ifstream file("price_logs.txt");
+    string line;
+    while (getline(file, line))
+    {
+        PriceLog log;
+        size_t pos1 = line.find(',');
+        size_t pos2 = line.find(',', pos1 + 1);
+        size_t pos3 = line.find(',', pos2 + 1);
+        log.productId = stoi(line.substr(0, pos1));
+        if (log.productId == productId)
+        {
+            log.previousPrice = stod(line.substr(pos1 + 1, pos2 - pos1 - 1));
+            log.newPrice = stod(line.substr(pos2 + 1, pos3 - pos2 - 1));
+            log.updateDate = line.substr(pos3 + 1);
+            logs.push_back(log);
+        }
+    }
+    file.close();
 }

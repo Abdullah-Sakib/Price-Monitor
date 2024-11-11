@@ -1,5 +1,5 @@
-1,Potato,65,Groceries
-2,Eggs,15,Groceries
+1,Potato,75,Groceries
+2,Eggs,14,Groceries
 3,Onion,120,Groceries
 4,Milk,50,Dairy
 5,Bread,30,Bakery

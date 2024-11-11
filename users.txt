@@ -1,0 +1,2 @@
+Sayed,admin@gmail.com,123456,Admin
+Abdullah Sakib,user@gmail.com,123456,User
