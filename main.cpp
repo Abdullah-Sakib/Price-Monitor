@@ -5,6 +5,8 @@
 #include <iomanip>
 #include <ctime>
 #include <algorithm>
+#include <sstream>
+#include <ctime>
 
 using namespace std;
 
@@ -364,10 +366,29 @@ void updateProductPrice()
     }
 }
 
-// Comparison function to compare PriceLog objects by updateDate
+// Helper function to parse date string into a time_t object
+time_t parseDateString(const string &dateStr)
+{
+    struct tm tm = {0};
+    istringstream ss(dateStr);
+    ss >> get_time(&tm, "%a %b %d %H:%M:%S %Y");
+    return mktime(&tm); // Convert tm structure to time_t
+}
+
+// Comparison function to compare PriceLog objects by parsed updateDate
 bool comparePriceLogsDescending(const PriceLog &a, const PriceLog &b)
 {
-    return a.updateDate > b.updateDate; // Sort in descending order
+    time_t timeA = parseDateString(a.updateDate);
+    time_t timeB = parseDateString(b.updateDate);
+    return timeA > timeB; // Sort in descending order
+}
+
+// Function to calculate percentage change
+double calculateRate(double oldPrice, double newPrice)
+{
+    if (oldPrice == 0)
+        return 0.0; // Avoid division by zero
+    return ((newPrice - oldPrice) / oldPrice) * 100.0;
 }
 
 void showPriceUpdateHistory()
@@ -388,13 +409,56 @@ void showPriceUpdateHistory()
         // Sort logs using the comparison function
         sort(logs.begin(), logs.end(), comparePriceLogsDescending);
 
+        const int dateWidth = 30;
+        const int priceWidth = 15;
+        const int changeWidth = 12;
+
         cout << "\nPrice Update Log for Product ID: " << productId << "\n";
-        cout << left << setw(30) << "Date" << setw(15) << "Old Price" << setw(15) << "New Price" << "\n";
-        cout << "---------------------------------------------------------\n";
+        cout << left << setw(dateWidth) << "Date"
+             << setw(priceWidth) << "Old Price"
+             << setw(priceWidth) << "New Price"
+             << setw(changeWidth) << "Change (%)" << "\n";
+        cout << string(dateWidth + 2 * priceWidth + changeWidth, '-') << "\n";
+
+        // Variables to track overall rates
+        double totalIncreaseRate = 0.0, totalDecreaseRate = 0.0;
+        int increaseCount = 0, decreaseCount = 0;
+
         for (const auto &log : logs)
         {
-            cout << left << setw(30) << log.updateDate << setw(15) << log.previousPrice << setw(15) << log.newPrice << "\n";
+            double rate = calculateRate(log.previousPrice, log.newPrice);
+            string changeType = (rate > 0) ? "+" : ""; // Add '+' for increases
+
+            cout << left << setw(dateWidth) << log.updateDate
+                 << setw(priceWidth) << log.previousPrice
+                 << setw(priceWidth) << log.newPrice
+                 << setw(changeWidth) << changeType + to_string(rate).substr(0, 5) + "%" << "\n";
+
+            // Accumulate rates based on increase or decrease
+            if (rate > 0)
+            {
+                totalIncreaseRate += rate;
+                increaseCount++;
+            }
+            else if (rate < 0)
+            {
+                totalDecreaseRate += abs(rate);
+                decreaseCount++;
+            }
         }
+
+        // Calculate overall rates
+        double averageIncreaseRate = (increaseCount > 0) ? totalIncreaseRate / increaseCount : 0.0;
+        double averageDecreaseRate = (decreaseCount > 0) ? totalDecreaseRate / decreaseCount : 0.0;
+
+        // Determine overall trend
+        double overallRate = (averageIncreaseRate >= averageDecreaseRate)
+                                 ? averageIncreaseRate
+                                 : -averageDecreaseRate;
+
+        cout << string(dateWidth + 2 * priceWidth + changeWidth, '-') << "\n";
+        cout << left << setw(dateWidth + 2 * priceWidth) << "Overall Rate:"
+             << fixed << setprecision(2) << (overallRate >= 0 ? "+" : "") << overallRate << "%" << "\n";
     }
 }
 

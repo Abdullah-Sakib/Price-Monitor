@@ -8,4 +8,24 @@
 8,Rice,70,Groceries
 9,Butter,80,Dairy
 10,Tomatoes,40,Vegetables
-11,Mutton,600,Meat
+11,Cheese,120,Dairy  
+12,Carrots,35,Vegetables  
+13,Bananas,60,Fruits  
+14,Beef,300,Meat  
+15,Flour,40,Bakery  
+16,Sugar,45,Groceries  
+17,Orange Juice,150,Beverages  
+18,Strawberries,180,Fruits  
+19,Peas,50,Vegetables  
+20,Pasta,75,Groceries  
+21,Fish,250,Meat  
+22,Cabbage,30,Vegetables  
+23,Yogurt,60,Dairy  
+24,Chocolate,90,Snacks  
+25,Coffee,250,Beverages  
+26,Lettuce,25,Vegetables  
+27,Mangoes,120,Fruits  
+28,Ice Cream,200,Dairy  
+29,Tea,180,Beverages  
+30,Biscuits,70,Snacks
+31,Mayo,100,Vegetables
