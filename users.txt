@@ -2,4 +2,5 @@ Sayed,admin@gmail.com,123456,Admin
 Abdullah Sakib,user@gmail.com,123456,User
 bizu,bizu@gmail.com,123456,Admin
 dolon,dolon@gmail.com,123456,User
-dolon04@gmail.com,dolon04@gmail.com,123456,Admin
+John Doe,jhon@gmail.com,123456,Admin
+Abdullah Sakib,abdullahsakib888@gmail.com,123456,User

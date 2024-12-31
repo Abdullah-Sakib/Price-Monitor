@@ -1,6 +1,6 @@
 1,Potato,75,Groceries
 2,Eggs,14,Groceries
-3,Onion,120,Groceries
+3,Onion,60,Groceries
 4,Milk,50,Dairy
 5,Bread,30,Bakery
 6,Apples,90,Fruits
@@ -28,4 +28,4 @@
 28,Ice Cream,200,Dairy  
 29,Tea,180,Beverages  
 30,Biscuits,70,Snacks
-31,Mayo,100,Vegetables
+31,Mayo,100,Vegetables                                                      

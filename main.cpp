@@ -6,7 +6,6 @@
 #include <ctime>
 #include <algorithm>
 #include <sstream>
-#include <ctime>
 
 using namespace std;
 
@@ -339,7 +338,7 @@ void updateProductPrice()
             product.price = newPrice;
             found = true;
 
-            // Create a price log entry
+            // Creating a price log entry
             PriceLog log;
             log.productId = productId;
             log.previousPrice = oldPrice;
@@ -366,7 +365,6 @@ void updateProductPrice()
     }
 }
 
-// Helper function to parse date string into a time_t object
 time_t parseDateString(const string &dateStr)
 {
     struct tm tm = {0};
